@@ -116,8 +116,7 @@
 		var openForPlayers = findGetParameter("open");
 		var mode = findGetParameter("mode");
 		var serverName = findGetParameter("server");
-			
-		
+				
 		var tru = function(){return true};
 		
 		var fnc = and_F(
@@ -126,7 +125,7 @@
 			playing ? ORA_filterCurrentlyPlayed : tru,
 			mapName ? ORA_filterLookForMap(mapName.toLowerCase()) : tru,
 			playerName ? ORA_filterLookForPlayer(playerName.toLowerCase()) : tru,
-			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru,
+			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru
 		);	
 		
 		if(!mode){
