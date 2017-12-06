@@ -41,7 +41,7 @@ function ResourceCenter(addr, hash, callback){
 		if (this.readyState == 4 && this.status == 200) {
 		 callback(JSON.parse(this.responseText)[0]);
 		}
-		if (this.status == 404){
+		else if (this.readyState == 4){
 			callback(ORA_unknownmap);
 		}
 	};
@@ -231,4 +231,38 @@ function ORA_niceString_Lambda(filter){
 			result[i] = ORA_niceString(result[i]);
 		return result;
 	}
+}
+
+function ORA_defaultBehaviour(elementId,filter){
+	var element = document.getElementById(elementId);
+	
+	var displayFields = ["name","protected","stateText","map","players","maxplayers","spectators","duration","clients"];
+	var textFields = ["Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
+	
+	ORA_prepData(filter||and_F(ORA_filterLookForMode("ra"),ORA_filterCurrentlyPlayed)
+		, function(dt){
+		element.innerHTML = '';
+		var text = "<table class='responstable'><tr class='ora_headerrow'>"
+		for(var k=0; k<displayFields.length; k++)
+			text+="<td class='header_"+displayFields[i]+"'>"+textFields[k]+"</td>";
+		text+="</tr>";
+		for(var i=0; i<dt.length; i++){
+			text+="<tr class='responseRow'>";
+			
+			for(var k=0; k<displayFields.length; k++){
+				//map is SPESHUL
+				if(displayFields[k]=="map")
+					text+="<td class='display_map'>"+dt[i].map.title+"</td>";
+				else
+					text+="<td class='display_"+displayFields[k]+"'>"+
+						(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join(", "):
+							(dt[i][displayFields[k]]?dt[i][displayFields[k]].toString():"")
+						)
+						+"</td>";
+			}				
+			
+			text+="</tr>";
+		}
+		element.innerHTML = text;
+	});
 }
