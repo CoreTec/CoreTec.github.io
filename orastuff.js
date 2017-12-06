@@ -76,18 +76,43 @@ function ORA_insertMap(datum, callback){
 	}
 }
 
+function utf8_to_str(utftext){
+        var string = "";
+        var i = 0;
+        var c = c1 = c2 = 0;
+        while ( i < utftext.length ) {
+            c = utftext.charCodeAt(i);
+            if (c < 128) {
+                string += String.fromCharCode(c);
+                i++;
+            }
+            else if((c > 191) && (c < 224)) {
+                c2 = utftext.charCodeAt(i+1);
+                string += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                i += 2;
+            }
+            else {
+                c2 = utftext.charCodeAt(i+1);
+                c3 = utftext.charCodeAt(i+2);
+                string += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                i += 3;
+            }
+        }
+        return string;
+    }
+
 function ORA_transformFields(datum){
 	for(var i=0; i<datum.length; i++){
 		for(var k=0; k<ORA_fieldB64.length; k++){
 			var fieldname = ORA_fieldB64[k];
 			if(!datum[i][fieldname]) continue;
-			datum[i][fieldname] = atob(datum[i][fieldname]);
+			datum[i][fieldname] = utf8_to_str(atob(datum[i][fieldname]));
 		}
 		for(var k=0; k<ORA_arrayB64.length; k++){
 			var fieldname = ORA_arrayB64[k];
 			if(!datum[i][fieldname]) continue;
 			for(var q=0; q< datum[i][fieldname].length; q++)
-				datum[i][fieldname][q] = atob(datum[i][fieldname][q]);
+				datum[i][fieldname][q] = utf8_to_str(atob(datum[i][fieldname][q]));
 		}
 		for(var k=0; k<ORA_intFields.length; k++){
 			var fieldname = ORA_intFields[k];
