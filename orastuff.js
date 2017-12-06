@@ -151,7 +151,7 @@ function ORA_filterCurrentlyPlayed(dt){return +dt.state==2}
 
 function ORA_filterLookForMap(map){
 	return function(dt){
-		return dt.map&&dt.map.title.toLowerCase().indexOf(map) != -1;
+		return dt.map&&dt.map.title&&dt.map.title.toLowerCase().indexOf(map) != -1;
 	}
 }
 
