@@ -122,22 +122,23 @@
 		var fnc = and_F(
 			mode ? ORA_filterLookForMode(mode.toLowerCase()) : tru,
 			openForPlayers ? ORA_filterStandard : tru,
-			playing ? ORA_filterCurrentlyPlayed : tru,
-			mapName ? ORA_filterLookForMap(mapName.toLowerCase()) : tru,
+			playing ? ORA_filterCurrentlyPlayed : tru,			
 			playerName ? ORA_filterLookForPlayer(playerName.toLowerCase()) : tru,
 			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru
 		);	
 		
 		if(!mode){
-			var displayFields = ["mods","name","protected","stateText","map","players","maxplayers","spectators","clients"];
-			var textFields = ["MODE","Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Player Nickames"];
+			var displayFields = ["mods","name","protected","stateText","map","players","maxplayers","spectators","duration","clients"];
+			var textFields = ["MODE","Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
 		}
 		else{
-			var displayFields = ["name","protected","stateText","map","players","maxplayers","spectators","clients"];
-			var textFields = ["Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Player Nickames"];
+			var displayFields = ["name","protected","stateText","map","players","maxplayers","spectators","duration","clients"];
+			var textFields = ["Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
 		}
 		
 		ORA_prepData(fnc, function(dt){
+			//MAP IS SO SPESHUL
+			dt = dt.filter(mapName ? ORA_filterLookForMap(mapName.toLowerCase()) : tru)
 			//debugger;
 			document.body.innerHTML = "";
 			var text = "<table class='responstable'><tr class='ora_headerrow'>"

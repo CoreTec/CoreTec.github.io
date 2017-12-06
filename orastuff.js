@@ -100,6 +100,10 @@ function utf8_to_str(utftext){
         }
         return string;
     }
+	
+function makeutc(date){
+	return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+}
 
 function ORA_transformFields(datum){
 	for(var i=0; i<datum.length; i++){
@@ -123,6 +127,13 @@ function ORA_transformFields(datum){
 			var fieldname = ORA_listFields[k];
 			if(!datum[i][fieldname]) continue;
 			datum[i][fieldname+'Text'] = ORA_listValues[k][+datum[i][fieldname]];
+		}
+		//playing date
+		if(datum[i].started){
+			var diff = Math.abs(makeutc(new Date(datum[i].started))-new Date().getTime());
+			var minutes = Math.floor(diff/1000/60);
+			var seconds = Math.floor(diff/1000-minutes*60).toString()
+			datum[i].duration = minutes+':'+(seconds.length<2?("0"+seconds):seconds);
 		}
 	}
 	return datum;
