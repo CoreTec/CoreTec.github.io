@@ -1,0 +1,171 @@
+<html>
+<head>
+    <title>ORA</title>    
+    <script src='orastuff.js'></script>
+	<style>
+		/*
+
+		RESPONSTABLE 2.0 by jordyvanraaij
+		  Designed mobile first!
+
+		If you like this solution, you might also want to check out the 1.0 version:
+		  https://gist.github.com/jordyvanraaij/9069194
+
+		*/
+		.responstable {
+		  margin: 1em 0;
+		  width: 100%;
+		  overflow: hidden;
+		  background: #FFF;
+		  color: #024457;
+		  border-radius: 10px;
+		  border: 1px solid #167F92;
+		}
+		.responstable tr {
+		  border: 1px solid #D9E4E6;
+		}
+		.responstable tr:nth-child(odd) {
+		  background-color: #EAF3F3;
+		}
+		.responstable th {
+		  display: none;
+		  border: 1px solid #FFF;
+		  background-color: #167F92;
+		  color: #FFF;
+		  padding: 1em;
+		}
+		.responstable th:first-child {
+		  display: table-cell;
+		  text-align: center;
+		}
+		.responstable th:nth-child(2) {
+		  display: table-cell;
+		}
+		.responstable th:nth-child(2) span {
+		  display: none;
+		}
+		.responstable th:nth-child(2):after {
+		  content: attr(data-th);
+		}
+		@media (min-width: 480px) {
+		  .responstable th:nth-child(2) span {
+			display: block;
+		  }
+		  .responstable th:nth-child(2):after {
+			display: none;
+		  }
+		}
+		.responstable td {
+		  display: block;
+		  word-wrap: break-word;
+		  max-width: 7em;
+		}
+		.responstable td:first-child {
+		  display: table-cell;
+		  text-align: center;
+		  border-right: 1px solid #D9E4E6;
+		}
+		@media (min-width: 480px) {
+		  .responstable td {
+			border: 1px solid #D9E4E6;
+		  }
+		}
+		.responstable th, .responstable td {
+		  text-align: left;
+		  margin: .5em 1em;
+		}
+		@media (min-width: 480px) {
+		  .responstable th, .responstable td {
+			display: table-cell;
+			padding: 1em;
+		  }
+		}
+
+		body {
+		  padding: 0 2em;
+		  font-family: Arial, sans-serif;
+		  color: #024457;
+		  background: #f2f2f2;
+		}
+
+		h1 {
+		  font-family: Verdana;
+		  font-weight: normal;
+		  color: #024457;
+		}
+		h1 span {
+		  color: #167F92;
+		}
+	</style>
+	<script>
+		function findGetParameter(parameterName) {
+			var result = null,
+				tmp = [];
+			location.search
+				.substr(1)
+				.split("&")
+				.forEach(function (item) {
+				  tmp = item.split("=");
+				  if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+				});
+			return result;
+		}
+		var playerName = findGetParameter("player");
+		var mapName = findGetParameter("map");
+		var playing = findGetParameter("playing");
+		var openForPlayers = findGetParameter("open");
+		var mode = findGetParameter("mode");
+		var serverName = findGetParameter("server");
+			
+		
+		var tru = function(){return true};
+		
+		var fnc = and_F(
+			mode ? ORA_filterLookForMode(mode.toLowerCase()) : tru,
+			openForPlayers ? ORA_filterStandard : tru,
+			playing ? ORA_filterCurrentlyPlayed : tru,
+			mapName ? ORA_filterLookForMap(mapName.toLowerCase()) : tru,
+			playerName ? ORA_filterLookForPlayer(playerName.toLowerCase()) : tru,
+			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru,
+		);	
+		
+		if(!mode){
+			var displayFields = ["mods","name","protected","stateText","map","players","maxplayers","spectators","clients"];
+			var textFields = ["MODE","Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Player Nickames"];
+		}
+		else{
+			var displayFields = ["name","protected","stateText","map","players","maxplayers","spectators","clients"];
+			var textFields = ["Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Player Nickames"];
+		}
+		
+		ORA_prepData(fnc, function(dt){
+			//debugger;
+			document.body.innerHTML = "";
+			var text = "<table class='responstable'><tr class='ora_headerrow'>"
+			for(var k=0; k<displayFields.length; k++)
+				text+="<td class='header_"+displayFields[i]+"'>"+textFields[k]+"</td>";
+			text+="</tr>";
+			for(var i=0; i<dt.length; i++){
+				text+="<tr class='responseRow'>";
+				
+				for(var k=0; k<displayFields.length; k++){
+					//map is SPESHUL
+					if(displayFields[k]=="map")
+						text+="<td class='display_map'>"+dt[i].map.title+"</td>";
+					else
+						text+="<td class='display_"+displayFields[k]+"'>"+
+							(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join(", "):
+								(dt[i][displayFields[k]]?dt[i][displayFields[k]].toString():"")
+							)
+							+"</td>";
+				}				
+				
+				text+="</tr>";
+			}
+			document.body.innerHTML = text;
+		});
+	</script>
+</head>
+<body>
+</body>
+</html>
