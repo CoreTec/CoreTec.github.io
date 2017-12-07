@@ -93,7 +93,7 @@
 					
 					for(var k=0; k<displayFields.length; k++){
 						text+="<td class='display_"+displayFields[k]+"'>"+
-							(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join(", "):
+							(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join("<br/>"):
 								(dt[i][displayFields[k]]?dt[i][displayFields[k]].toString():"")
 							)
 							+"</td>";
