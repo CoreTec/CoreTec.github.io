@@ -29,6 +29,19 @@ ORA_displayFields = {"playersText":
 		var minutes = Math.floor(diff/1000/60);
 		var seconds = Math.floor(diff/1000-minutes*60).toString()
 		return minutes+':'+(seconds.length<2?("0"+seconds):seconds);
+	},
+	"modeDesc":
+	function(dt){
+		var modeVal = dt.mods.split("@")[0];
+		if(modeVal=="ra")
+			return "Red Alert";
+		if(modeVal=="cnc")
+			return "Tiberian Dawn";
+		if(modeVal=="d2k")
+			return "Dune 2000";
+		if(modeVal=="cd")
+			return "Crystallized Doom";
+		return modeVal;
 	}
 };
 ORA_resourceCenter = "https://resource.openra.net/map/hash/";
