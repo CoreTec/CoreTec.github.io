@@ -22,6 +22,10 @@
 		var openForPlayers = findGetParameter("open");
 		var mode = findGetParameter("mode");
 		var serverName = findGetParameter("server");
+		var hasPlayers = findGetParameter("hasplayers");
+		var _getDisplayFields = findGetParameter("display");
+		if(_getDisplayFields)
+			var getDisplayFields = _getDisplayFields.split(",");
 				
 		var tru = function(){return true};
 		
@@ -30,16 +34,30 @@
 			openForPlayers ? ORA_filterStandard : tru,
 			playing ? ORA_filterCurrentlyPlayed : tru,			
 			playerName ? ORA_filterLookForPlayer(playerName.toLowerCase()) : tru,
-			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru
+			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru,
+			hasPlayers ? ORA_filterHasPlayers : tru
 		);	
 		
-		if(!mode){
-			var displayFields = ["mods","name","protected","stateText","map","players","maxplayers","spectators","duration","clients"];
-			var textFields = ["MODE","Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
+		var textFields={
+			mods: "MODE",
+			name: "Server Name",
+			"protected": "Passworded",
+			stateText: "Status",
+			location: "Location",
+			mapLink: "Map Name",
+			players: "Players",
+			maxplayers: "Max Players",
+			spectators: "Spectators",
+			duration: "Play Time (approx.)",
+			clients: "Player Nickames",
+			playersText: "Players"
+		}
+		
+		if(!_getDisplayFields){
+			var displayFields = ["mods","name","protected","stateText","mapLink","players","maxplayers","spectators","duration","clients"];
 		}
 		else{
-			var displayFields = ["name","protected","stateText","map","players","maxplayers","spectators","duration","clients"];
-			var textFields = ["Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
+			var displayFields = getDisplayFields;
 		}	
 		
 		function ORA_work(elementid){
@@ -51,21 +69,17 @@
 				element.innerHTML = "";
 				var text = "<table class='responstable'><tr class='ora_headerrow'>"
 				for(var k=0; k<displayFields.length; k++)
-					text+="<td class='header_"+displayFields[i]+"'>"+textFields[k]+"</td>";
+					text+="<td class='header_"+displayFields[k]+"'>"+(textFields[displayFields[k]]||displayFields[k])+"</td>";
 				text+="</tr>";
 				for(var i=0; i<dt.length; i++){
 					text+="<tr class='responseRow'>";
 					
 					for(var k=0; k<displayFields.length; k++){
-						//map is SPESHUL
-						if(displayFields[k]=="map")
-							text+="<td class='display_map'>"+dt[i].map.title+"</td>";
-						else
-							text+="<td class='display_"+displayFields[k]+"'>"+
-								(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join(", "):
-									(dt[i][displayFields[k]]?dt[i][displayFields[k]].toString():"")
-								)
-								+"</td>";
+						text+="<td class='display_"+displayFields[k]+"'>"+
+							(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join(", "):
+								(dt[i][displayFields[k]]?dt[i][displayFields[k]].toString():"")
+							)
+							+"</td>";
 					}				
 					
 					text+="</tr>";
@@ -75,7 +89,7 @@
 		}
 	</script>
 </head>
-<body onload='ORA_work("raservergrid");setInterval(function(){ORA_work("raservergrid")},15*1000)'>
+<body onload='ORA_work("raservergrid");setInterval(function(){ORA_work("raservergrid")},30*1000)' style='background:transparent'>
 	<div id='raservergrid'></div>
 </body>
 </html>

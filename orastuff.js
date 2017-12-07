@@ -16,12 +16,33 @@ ORA_listValues = [
 	["", "waiting", "playing"]
 ];
 ORA_intFields = ["bots", "id", "maxplayers", "spectators", "players"];
+
+ORA_displayFields = {"playersText":
+	function(dt){
+		return ""+dt.players+" / "+dt.maxplayers+(dt.spectators?(" + " + dt.spectators):"");
+	},
+	"duration":
+	function(dt){
+		if(!dt.started)
+			return "";
+		var diff = Math.abs(makeutc(new Date(dt.started))-new Date().getTime());
+		var minutes = Math.floor(diff/1000/60);
+		var seconds = Math.floor(diff/1000-minutes*60).toString()
+		return minutes+':'+(seconds.length<2?("0"+seconds):seconds);
+	}
+};
 ORA_resourceCenter = "https://resource.openra.net/map/hash/";
 ORA_serverapi = "https://master.openra.net/games_json";
+ORA_resourceCenterMapPreview = "https://resource.openra.net/maps/";
 ORA_unknownmap = {
 	title:"unknown map",
 	author:"unknown"
 }
+
+ORA_maplist = {
+	
+};
+
 ORA_datumCounter = {
 	cnt:0,
 	callback: function(){},
@@ -53,27 +74,44 @@ function ORA_insertMap(datum, callback){
 	ORA_datumCounter.callback = function(){
 		callback(datum);
 	};
+	ORA_datumCounter.add();
 	for(var i=0; i<datum.length; i++){
 		ORA_datumCounter.add();
-		ResourceCenter(
-			ORA_resourceCenter,
-			datum[i].map,
-			function(dt){
-				return function(mapinfo){
-					dt.map = {
-						title: mapinfo.title,
-						author: mapinfo.author,
-						viewed: mapinfo.viewed,
-						downloaded: mapinfo.downloaded,
-						players: mapinfo.players,
-						infotext: mapinfo.info,
-						rules: mapinfo.rules?atob(mapinfo.rules):null
-					};
-					ORA_datumCounter.remove();
-				}
-			}(datum[i])
-		)
+		if(ORA_maplist[datum[i].map]){
+			datum[i].map = ORA_maplist[datum[i].map];
+			if(datum[i].map.url && datum[i].map.id)
+				datum[i].mapLink = datum[i].map.title+"&nbsp;(<a href='"+ORA_resourceCenterMapPreview + datum[i].map.id.toString()+"'>link</a>)"+"&nbsp;(<a href='"+datum[i].map.url+"'>download</a>)";
+			else datum[i].mapLink = datum[i].map.title;
+			ORA_datumCounter.remove();
+		}
+		else
+			ResourceCenter(
+				ORA_resourceCenter,
+				datum[i].map,
+				function(dt){
+					return function(mapinfo){
+						var mapid = dt.map;
+						dt.map = {
+							title: mapinfo.title,
+							author: mapinfo.author,
+							viewed: mapinfo.viewed,
+							downloaded: mapinfo.downloaded,
+							players: mapinfo.players,
+							infotext: mapinfo.info,
+							rules: mapinfo.rules?atob(mapinfo.rules):null,
+							url: mapinfo.url,
+							id: mapinfo.id
+						};
+						if(dt.map.url && dt.map.id)
+							dt.mapLink = dt.map.title+"&nbsp;(<a href='"+ORA_resourceCenterMapPreview + dt.map.id.toString()+"'>link</a>)"+"&nbsp;(<a href='"+dt.map.url+"'>download</a>)";
+						else dt.mapLink = dt.map.title;
+						ORA_maplist[mapid] = dt.map;
+						ORA_datumCounter.remove();
+					}
+				}(datum[i])
+			)
 	}
+	ORA_datumCounter.remove();
 }
 
 function utf8_to_str(utftext){
@@ -128,13 +166,10 @@ function ORA_transformFields(datum){
 			if(!datum[i][fieldname]) continue;
 			datum[i][fieldname+'Text'] = ORA_listValues[k][+datum[i][fieldname]];
 		}
-		//playing date
-		if(datum[i].started){
-			var diff = Math.abs(makeutc(new Date(datum[i].started))-new Date().getTime());
-			var minutes = Math.floor(diff/1000/60);
-			var seconds = Math.floor(diff/1000-minutes*60).toString()
-			datum[i].duration = minutes+':'+(seconds.length<2?("0"+seconds):seconds);
+		for(var fld in ORA_displayFields){
+			datum[i][fld]=ORA_displayFields[fld](datum[i]);
 		}
+		
 	}
 	return datum;
 }
@@ -146,6 +181,8 @@ function ORA_easyfilter(datum, fieldName, fieldValue){
 }
 
 function ORA_filterStandard(dt){return +dt.state==1 && dt.players>0 && dt.maxplayers>dt.players}
+
+function ORA_filterHasPlayers(dt){return dt.players>0}
 
 function ORA_filterCurrentlyPlayed(dt){return +dt.state==2}
 
@@ -236,8 +273,8 @@ function ORA_niceString_Lambda(filter){
 function ORA_defaultBehaviour(elementId,filter){
 	var element = document.getElementById(elementId);
 	
-	var displayFields = ["name","protected","stateText","map","players","maxplayers","spectators","duration","clients"];
-	var textFields = ["Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
+	var displayFields = ["name","map","players","maxplayers","spectators","duration","clients"];
+	var textFields = ["Server Name","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
 	
 	ORA_prepData(filter||and_F(ORA_filterLookForMode("ra"),ORA_filterCurrentlyPlayed)
 		, function(dt){
