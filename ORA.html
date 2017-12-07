@@ -26,6 +26,12 @@
 		var _getDisplayFields = findGetParameter("display");
 		if(_getDisplayFields)
 			var getDisplayFields = _getDisplayFields.split(",");
+		var sortField = findGetParameter("sort");
+		var sortDir = findGetParameter("sortdir");
+		
+		if(!sortDir) sortDir=1;
+		if(sortDir=="asc") sortDir=-1;
+		if(sortDir=="desc") sortDir=1;
 				
 		var tru = function(){return true};
 		
@@ -65,7 +71,17 @@
 			var element = document.getElementById(elementid);
 			ORA_prepData(fnc, function(dt){
 				//MAP IS SO SPESHUL
-				dt = dt.filter(mapName ? ORA_filterLookForMap(mapName.toLowerCase()) : tru)
+				dt = dt.filter(mapName ? ORA_filterLookForMap(mapName.toLowerCase()) : tru);
+				if(sortField)
+					dt = dt.sort(
+					function(a,b){
+						if(a[sortField]>b[sortField])
+							return -sortDir;
+						if(a[sortField]<b[sortField])
+							return sortDir;
+						return 0;
+					});
+				
 				//debugger;
 				element.innerHTML = "";
 				var text = "<table class='responstable'><tr class='ora_headerrow'>"
