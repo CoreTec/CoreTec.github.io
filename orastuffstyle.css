@@ -21,6 +21,8 @@
 	border-left: 1px solid #808080;
 	padding: 2px 5px;
     border-bottom: 1px solid #808080;
+	font-family: "Roboto", "Helvetica", sans-serif;
+	font-size: 13px;
 }
 
 .ora_headerrow td{
@@ -30,6 +32,8 @@
   text-align: center;
   background-color: #333333;
   color: #E0E0E0;
+  font-family: "Roboto", "Helvetica", sans-serif;
+  font-size: 16px;
 }
 
 /*custom stuff*/
