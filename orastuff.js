@@ -93,7 +93,7 @@ function ORA_insertMap(datum, callback){
 		if(ORA_maplist[datum[i].map]){
 			datum[i].map = ORA_maplist[datum[i].map];
 			if(datum[i].map.url && datum[i].map.id)
-				datum[i].mapLink = datum[i].map.title+"&nbsp;(<a href='"+ORA_resourceCenterMapPreview + datum[i].map.id.toString()+"'>link</a>)"+"&nbsp;(<a href='"+datum[i].map.url+"'>download</a>)";
+				datum[i].mapLink = datum[i].map.title+"<br/>(<a href='"+ORA_resourceCenterMapPreview + datum[i].map.id.toString()+"'>link</a>)"+"<br/>(<a href='"+datum[i].map.url+"'>download</a>)";
 			else datum[i].mapLink = datum[i].map.title;
 			ORA_datumCounter.remove();
 		}
@@ -116,7 +116,7 @@ function ORA_insertMap(datum, callback){
 							id: mapinfo.id
 						};
 						if(dt.map.url && dt.map.id)
-							dt.mapLink = dt.map.title+"&nbsp;(<a href='"+ORA_resourceCenterMapPreview + dt.map.id.toString()+"'>link</a>)"+"&nbsp;(<a href='"+dt.map.url+"'>download</a>)";
+							dt.mapLink = dt.map.title+"<br/>(<a href='"+ORA_resourceCenterMapPreview + dt.map.id.toString()+"'>link</a>)"+"<br/>(<a href='"+dt.map.url+"'>download</a>)";
 						else dt.mapLink = dt.map.title;
 						ORA_maplist[mapid] = dt.map;
 						ORA_datumCounter.remove();
@@ -281,38 +281,4 @@ function ORA_niceString_Lambda(filter){
 			result[i] = ORA_niceString(result[i]);
 		return result;
 	}
-}
-
-function ORA_defaultBehaviour(elementId,filter){
-	var element = document.getElementById(elementId);
-	
-	var displayFields = ["name","map","players","maxplayers","spectators","duration","clients"];
-	var textFields = ["Server Name","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
-	
-	ORA_prepData(filter||and_F(ORA_filterLookForMode("ra"),ORA_filterCurrentlyPlayed)
-		, function(dt){
-		element.innerHTML = '';
-		var text = "<table class='responstable'><tr class='ora_headerrow'>"
-		for(var k=0; k<displayFields.length; k++)
-			text+="<td class='header_"+displayFields[i]+"'>"+textFields[k]+"</td>";
-		text+="</tr>";
-		for(var i=0; i<dt.length; i++){
-			text+="<tr class='responseRow'>";
-			
-			for(var k=0; k<displayFields.length; k++){
-				//map is SPESHUL
-				if(displayFields[k]=="map")
-					text+="<td class='display_map'>"+dt[i].map.title+"</td>";
-				else
-					text+="<td class='display_"+displayFields[k]+"'>"+
-						(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join(", "):
-							(dt[i][displayFields[k]]?dt[i][displayFields[k]].toString():"")
-						)
-						+"</td>";
-			}				
-			
-			text+="</tr>";
-		}
-		element.innerHTML = text;
-	});
 }
