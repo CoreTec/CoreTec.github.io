@@ -42,6 +42,13 @@ ORA_displayFields = {"playersText":
 		if(modeVal=="cd")
 			return "Crystallized Doom";
 		return modeVal;
+	},
+	"serverLink":
+	function(dt){
+		var modeid = "openra-"+dt.mods.replace("@","-");
+		if(dt.state==1)
+			return dt.name+" (<a href='"+modeid+"://"+dt.address+"'>join</a>)";
+		return dt.name
 	}
 };
 ORA_resourceCenter = "https://resource.openra.net/map/hash/";
