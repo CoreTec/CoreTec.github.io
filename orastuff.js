@@ -235,6 +235,20 @@ function ORA_filterLookForPlayer(player){
 	}
 }
 
+function ORA_filterLookForPlayerList(players){
+	return function(dt){
+		if(!dt.clients)
+			return false;
+		for(var i=0; i<dt.clients.length; i++){
+			for(var k=0; k<players.length; k++){
+				if(dt.clients[i].toLowerCase().indexOf(players[k].toLowerCase())!=-1)
+					return true;
+			}
+		}
+		return false;
+	}
+}
+
 function ORA_filterCompetitive(dt){return +dt.state==1 && dt.players>0 && dt.maxplayers==2}
 
 function ORA_filterRedAlert(dt){return +dt.state==1 && dt.players>0 && dt.mods.split("@")[0]=="ra"}

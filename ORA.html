@@ -17,6 +17,9 @@
 			return result;
 		}
 		var playerName = findGetParameter("player");
+		if(playerName){
+			playerName = playerName.split(",");
+		}
 		var mapName = findGetParameter("map");
 		var playing = findGetParameter("playing");
 		var openForPlayers = findGetParameter("open");
@@ -41,7 +44,7 @@
 			mode ? ORA_filterLookForMode(mode.toLowerCase()) : tru,
 			openForPlayers ? ORA_filterStandard : tru,
 			playing ? ORA_filterCurrentlyPlayed : tru,			
-			playerName ? ORA_filterLookForPlayer(playerName.toLowerCase()) : tru,
+			playerName ? ORA_filterLookForPlayerList(playerName) : tru,
 			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru,
 			hasPlayers ? ORA_filterHasPlayers : tru
 		);	
