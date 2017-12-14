@@ -22,6 +22,7 @@
 		}
 		var mapName = findGetParameter("map");
 		var playing = findGetParameter("playing");
+		var waiting = findGetParameter("waiting");
 		var openForPlayers = findGetParameter("open");
 		var mode = findGetParameter("mode");
 		var serverName = findGetParameter("server");
@@ -47,6 +48,7 @@
 			playerName ? ORA_filterLookForPlayerList(playerName) : tru,
 			serverName ? ORA_filterLookForServer(serverName.toLowerCase()) : tru,
 			hasPlayers ? ORA_filterHasPlayers : tru
+			waiting ? ORA_filterCurrentlyWaiting : tru
 		);	
 		
 		var textFields={
