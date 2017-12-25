@@ -147,6 +147,8 @@ function ORA_easyfilter(datum, fieldName, fieldValue){
 
 function ORA_filterStandard(dt){return +dt.state==1 && dt.players>0 && dt.maxplayers>dt.players}
 
+function ORA_filterHasPlayers(dt){return dt.players>0 || dt.spectators>0 }
+
 function ORA_filterCurrentlyPlayed(dt){return +dt.state==2}
 
 function ORA_filterLookForMap(map){
