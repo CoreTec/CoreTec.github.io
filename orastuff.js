@@ -16,12 +16,53 @@ ORA_listValues = [
 	["", "waiting", "playing"]
 ];
 ORA_intFields = ["bots", "id", "maxplayers", "spectators", "players"];
+
+ORA_displayFields = {"playersText":
+	function(dt){
+		return ""+dt.players+" / "+dt.maxplayers+(dt.spectators?(" + " + dt.spectators):"");
+	},
+	"duration":
+	function(dt){
+		if(!dt.started)
+			return "";
+		var diff = Math.abs(makeutc(new Date(dt.started))-new Date().getTime());
+		var minutes = Math.floor(diff/1000/60);
+		var seconds = Math.floor(diff/1000-minutes*60).toString()
+		return minutes+':'+(seconds.length<2?("0"+seconds):seconds);
+	},
+	"modeDesc":
+	function(dt){
+		var modeVal = dt.mods.split("@")[0];
+		if(modeVal=="ra")
+			return "Red Alert";
+		if(modeVal=="cnc")
+			return "Tiberian Dawn";
+		if(modeVal=="d2k")
+			return "Dune 2000";
+		if(modeVal=="cd")
+			return "Crystallized Doom";
+		return modeVal;
+	},
+	"serverLink":
+	function(dt){
+		var modeid = "openra-"+dt.mods.replace("@","-");
+		if(dt.state==1)
+			return dt.name+" (<a href='"+modeid+"://"+dt.address+"'>join</a>)";
+		return dt.name
+	}
+};
 ORA_resourceCenter = "https://resource.openra.net/map/hash/";
-ORA_serverapi = "https://master.openra.net/games?type=json";
+ORA_serverapi = "https://master.openra.net/games_json";
+ORA_resourceCenterMapPreview = "https://resource.openra.net/maps/";
 ORA_unknownmap = {
 	title:"unknown map",
 	author:"unknown"
 }
+
+ORA_maplist = {
+	
+};
+
 ORA_datumCounter = {
 	cnt:0,
 	callback: function(){},
@@ -36,44 +77,62 @@ ORA_datumCounter = {
 }
 
 function ResourceCenter(addr, hash, callback){
-	var xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-		 callback(JSON.parse(this.responseText)[0]);
-		}
-		else if (this.readyState == 4){
-			callback(ORA_unknownmap);
-		}
-	};
-	xhttp.open("GET", addr+hash, true);
-	xhttp.send();
+	//var xhttp = new XMLHttpRequest();
+	//xhttp.onreadystatechange = function() {
+	//	if (this.readyState == 4 && this.status == 200) {
+	//	 callback(JSON.parse(this.responseText)[0]);
+	//	}
+	//	else if (this.readyState == 4){
+	//		callback(ORA_unknownmap);
+	//	}
+	//};
+	//xhttp.open("GET", addr+hash, true);
+	//xhttp.send();
+	callback(ORA_unknownmap);
 }
 
 function ORA_insertMap(datum, callback){
 	ORA_datumCounter.callback = function(){
 		callback(datum);
 	};
+	ORA_datumCounter.add();
 	for(var i=0; i<datum.length; i++){
 		ORA_datumCounter.add();
-		ResourceCenter(
-			ORA_resourceCenter,
-			datum[i].map,
-			function(dt){
-				return function(mapinfo){
-					dt.map = {
-						title: mapinfo.title,
-						author: mapinfo.author,
-						viewed: mapinfo.viewed,
-						downloaded: mapinfo.downloaded,
-						players: mapinfo.players,
-						infotext: mapinfo.info,
-						rules: mapinfo.rules?atob(mapinfo.rules):null
-					};
-					ORA_datumCounter.remove();
-				}
-			}(datum[i])
-		)
+		if(ORA_maplist[datum[i].map]){
+			datum[i].map = ORA_maplist[datum[i].map];
+			if(datum[i].map.url && datum[i].map.id)
+				datum[i].mapLink = datum[i].map.title+"<br/>(<a href='"+ORA_resourceCenterMapPreview + datum[i].map.id.toString()+"'>link</a>)"+"<br/>(<a href='"+datum[i].map.url+"'>download</a>)";
+			else datum[i].mapLink = datum[i].map.title;
+			ORA_datumCounter.remove();
+		}
+		else
+			ResourceCenter(
+				ORA_resourceCenter,
+				datum[i].map,
+				function(dt){
+					return function(mapinfo){
+						var mapid = dt.map;
+						dt.map = {
+							title: mapinfo.title,
+							author: mapinfo.author,
+							viewed: mapinfo.viewed,
+							downloaded: mapinfo.downloaded,
+							players: mapinfo.players,
+							infotext: mapinfo.info,
+							rules: mapinfo.rules?atob(mapinfo.rules):null,
+							url: mapinfo.url,
+							id: mapinfo.id
+						};
+						if(dt.map.url && dt.map.id)
+							dt.mapLink = dt.map.title+"<br/>(<a href='"+ORA_resourceCenterMapPreview + dt.map.id.toString()+"'>link</a>)"+"<br/>(<a href='"+dt.map.url+"'>download</a>)";
+						else dt.mapLink = dt.map.title;
+						ORA_maplist[mapid] = dt.map;
+						ORA_datumCounter.remove();
+					}
+				}(datum[i])
+			)
 	}
+	ORA_datumCounter.remove();
 }
 
 function utf8_to_str(utftext){
@@ -128,13 +187,10 @@ function ORA_transformFields(datum){
 			if(!datum[i][fieldname]) continue;
 			datum[i][fieldname+'Text'] = ORA_listValues[k][+datum[i][fieldname]];
 		}
-		//playing date
-		if(datum[i].started){
-			var diff = Math.abs(makeutc(new Date(datum[i].started))-new Date().getTime());
-			var minutes = Math.floor(diff/1000/60);
-			var seconds = Math.floor(diff/1000-minutes*60).toString()
-			datum[i].duration = minutes+':'+(seconds.length<2?("0"+seconds):seconds);
+		for(var fld in ORA_displayFields){
+			datum[i][fld]=ORA_displayFields[fld](datum[i]);
 		}
+		
 	}
 	return datum;
 }
@@ -147,9 +203,12 @@ function ORA_easyfilter(datum, fieldName, fieldValue){
 
 function ORA_filterStandard(dt){return +dt.state==1 && dt.players>0 && dt.maxplayers>dt.players}
 
-function ORA_filterHasPlayers(dt){return dt.players>0 || dt.spectators>0 }
+function ORA_filterHasPlayers(dt){return dt.players>0}
 
 function ORA_filterCurrentlyPlayed(dt){return +dt.state==2}
+
+function ORA_filterCurrentlyWaiting(dt){return +dt.state==1}
+
 
 function ORA_filterLookForMap(map){
 	return function(dt){
@@ -176,6 +235,20 @@ function ORA_filterLookForPlayer(player){
 		for(var i=0; i<dt.clients.length; i++)
 			if(dt.clients[i].toLowerCase().indexOf(player)!=-1)
 				return true;
+		return false;
+	}
+}
+
+function ORA_filterLookForPlayerList(players){
+	return function(dt){
+		if(!dt.clients)
+			return false;
+		for(var i=0; i<dt.clients.length; i++){
+			for(var k=0; k<players.length; k++){
+				if(dt.clients[i].toLowerCase().indexOf(players[k].toLowerCase())!=-1)
+					return true;
+			}
+		}
 		return false;
 	}
 }
@@ -233,38 +306,4 @@ function ORA_niceString_Lambda(filter){
 			result[i] = ORA_niceString(result[i]);
 		return result;
 	}
-}
-
-function ORA_defaultBehaviour(elementId){
-	var element = document.getElementById(elementId);
-	
-	var displayFields = ["name","protected","stateText","map","players","maxplayers","spectators","duration","clients"];
-	var textFields = ["Server Name","protected","Status","Map Name","Players","Max Players","Spectators","Play Time","Player Nickames"];
-	
-	ORA_prepData(and_F(ORA_filterLookForMode("ra"),ORA_filterCurrentlyPlayed)
-		, function(dt){
-		element.innerHTML = '';
-		var text = "<table class='responstable'><tr class='ora_headerrow'>"
-		for(var k=0; k<displayFields.length; k++)
-			text+="<td class='header_"+displayFields[i]+"'>"+textFields[k]+"</td>";
-		text+="</tr>";
-		for(var i=0; i<dt.length; i++){
-			text+="<tr class='responseRow'>";
-			
-			for(var k=0; k<displayFields.length; k++){
-				//map is SPESHUL
-				if(displayFields[k]=="map")
-					text+="<td class='display_map'>"+dt[i].map.title+"</td>";
-				else
-					text+="<td class='display_"+displayFields[k]+"'>"+
-						(Array.isArray(dt[i][displayFields[k]])?dt[i][displayFields[k]].join(", "):
-							(dt[i][displayFields[k]]?dt[i][displayFields[k]].toString():"")
-						)
-						+"</td>";
-			}				
-			
-			text+="</tr>";
-		}
-		element.innerHTML = text;
-	});
 }
